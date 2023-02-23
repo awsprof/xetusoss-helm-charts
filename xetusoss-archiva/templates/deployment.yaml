@@ -106,19 +106,14 @@ spec:
             - mountPath: /certs
               name: certs
             {{- end}}
+          {{- with .Values.readinessProbe }}
           readinessProbe:
-            exec:
-              command:
-                - /healthcheck.sh
-            initialDelaySeconds: 5
-            periodSeconds: 5
+            {{- tpl . $ | nindent 12 }}
+          {{- end }}            
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-            exec:
-              command:
-                - /healthcheck.sh
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 27
+            {{- tpl . $ | nindent 12 }}
+          {{- end }}
           resources:
             limits:
               cpu: {{ .Values.resourceConf.cpuLimit }}
