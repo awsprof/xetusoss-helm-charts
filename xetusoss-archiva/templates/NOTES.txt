@@ -1,7 +1,3 @@
-{{- if .Values.ingress.tls.secretName -}}
-Warning: ingress.tls.secretName has been renamed to ingress.tls.secret. Please
-update your values.
-{{ end -}}
 {{- if .Values.advanced -}}
 Warning: the "advanced" key has been renamed to "archiva". Please update your
 values.

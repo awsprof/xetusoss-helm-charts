@@ -105,13 +105,13 @@ ingress:
       host: "{{ .Release.Name }}.example.com"
       # Paths for the host
       paths:
-        - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
+        - path: "/"
           pathType: Prefix
   # TLS configuration
-  tls:
-    - hosts:
-        - "{{ .Release.Name }}.example.com"
-      secretName: ""
+  # tls:
+  #   - hosts:
+  #       - "{{ .Release.Name }}.example.com"
+  #     secretName: ""
 
 persistence:
   enabled: true
