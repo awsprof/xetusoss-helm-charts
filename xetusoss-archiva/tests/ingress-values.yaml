@@ -9,5 +9,6 @@ proxy:
 ingress:
   enabled: true
   tls:
-    enabled: true
-    secret: archiva-test-tls-secret
+    - hosts:
+        - test.example.com
+      secretName: archiva-test-tls-secret
