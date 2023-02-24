@@ -1,42 +1,66 @@
-{{- if .Values.ingress.enabled -}}
+{{- $ingress := .Values.ingress -}}
+{{- if $ingress.enabled -}}
 apiVersion: {{ template "xetusoss-archiva.ingressApiVersion" . }}
 kind: Ingress
 metadata:
   name: {{ template "xetusoss-archiva.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "xetusoss-archiva.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+  {{- with $ingress.annotations }}
   annotations:
-    {{- range $key, $value := .Values.ingress.annotations }}
-      {{ $key | quote }}: {{ $value | quote }}
+    {{- range $key, $value := . }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
     {{- end }}
+  {{- end }}
+  {{- with $ingress.labels }}
+  labels:
+    {{- range $key, $value := . }}
+    {{- printf "%s: %s" $key (tpl $value $ | quote) | nindent 4 }}
+    {{- end }}
+  {{- end }}  
 spec:
+{{- if $ingress.ingressClassName }}
+  ingressClassName: {{ $ingress.ingressClassName }}
+{{- end }}
+{{- range .Values.ingress.rules }}
   rules:
-  - host: {{ .Values.proxy.hostname }}
+  - host: {{ tpl .host $ | quote }}
     http:
       paths:
-        - {{ if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-          path: {{ default "/" .Values.proxy.pathPrefix }}
-          pathType: Prefix
-          {{- else -}}
-          path: {{ default "" .Values.proxy.pathPrefix }}
-          {{- end }}
-          backend:
-            {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion }}
-            service:
-              name: {{ include "xetusoss-archiva.fullname" . }}
-              port: 
-                name: http
-            {{- else }}
-            serviceName: {{ include "xetusoss-archiva.fullname" . }}
-            servicePort: http
-            {{- end }}
-  {{- if .Values.ingress.tls.enabled }}
+        {{- range .paths }}
+        {{ if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+          - path: {{ tpl .path $ | quote }}
+            pathType: {{ .pathType }}
+            backend:
+              {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ include "xetusoss-archiva.fullname" . }}
+                port:
+                  name: {{ $ingress.servicePort }}
+              {{- else }}
+              serviceName: {{ include "xetusoss-archiva.fullname" . }}
+              servicePort: {{ $ingress.servicePort }}
+              {{- end }}      
+        {{- else }}
+          - path: {{ tpl .path $ | quote }}
+        {{- end }}      
+        {{- end }}      
+{{- end }}            
+{{- if $ingress.tls }}
   tls:
-    - secretName: {{ template "xetusoss-archiva.tlsSecret" . }}
-      hosts:
-        - {{ .Values.proxy.hostname }}
-  {{- end }}
+    {{- range $ingress.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ tpl . $ | quote }}
+      {{- end }}
+      {{- with .secretName }}
+      secretName: {{ tpl . $ }}
+      {{- end }}
+    {{- end }}
+{{- end }}            
+{{- end }}
 {{- end }}
