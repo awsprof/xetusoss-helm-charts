@@ -28,15 +28,15 @@ spec:
 {{- end }}
 {{- if $ingress.tls }}
   tls:
-    {{- range $ingress.tls }}
+  {{- range $ingress.tls }}
     - hosts:
-      {{- range .hosts }}
-        - {{ tpl . $ | quote }}
-      {{- end }}
-      {{- with .secretName }}
-      secretName: {{ tpl . $ }}
-      {{- end }}
+    {{- range .hosts }}
+      - {{ tpl . $ | quote }}
     {{- end }}
+    {{- with .secretName }}
+      secretName: {{ tpl . $ }}
+    {{- end }}
+  {{- end }}
 {{- end }}    
 {{- range .Values.ingress.rules }}
   rules:
