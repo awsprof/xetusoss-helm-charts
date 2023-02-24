@@ -11,10 +11,10 @@ smtp:
 
 #
 # HTTP Proxy configuration
-# 
+#
 proxy:
   enabled: false
-  hostname: 
+  hostname:
   proto: https
   pathPrefix:
   customPort:
@@ -40,8 +40,8 @@ resourceConf:
   # This is used for both the memory request and limit
   #
   memory: 512
-  cpuLimit: 2
-  cpuRequest: 200m
+  cpuLimit: 3
+  cpuRequest: 1
 
 #
 # Archiva configuration
@@ -53,20 +53,70 @@ archiva:
 service:
   type: ClusterIP
 
+# Custom readiness Probes and liveness probes
+# Please ensure the string is indented properly otherwise the helmchart will fail
+readinessProbe: |
+  exec:
+    command:
+      - /healthcheck.sh
+  # httpGet:
+  #   path: /restServices/archivaServices/pingService/ping
+  #   port: 8080
+  #   httpHeaders:
+  #     - name: Origin
+  #       value: http://localhost:8080/
+  initialDelaySeconds: 15
+  periodSeconds: 5
+
+livenessProbe: |
+  exec:
+    command:
+      - /healthcheck.sh
+  # httpGet:
+  #   path: /restServices/archivaServices/pingService/ping
+  #   port: 8080
+  #   httpHeaders:
+  #     - name: Origin
+  #       value: http://localhost:8080/
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 27
+
 ingress:
+  # If `true`, an Ingress is created
   enabled: false
-  annotations: {}
+  # The name of the Ingress Class associated with this ingress
+  ingressClassName: ""
+  # The Service port targeted by the Ingress
+  servicePort: http
+  # Ingress annotations
+  annotations:
+    {}
+    ## Resolve HTTP 502 error using ingress-nginx:
+    ## See https://www.ibm.com/support/pages/502-error-ingress-keycloak-response
+    # nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
+
+  # Additional Ingress labels
+  labels:
+    {}
+    # List of rules for the Ingress
+  rules:
+    - # Ingress host
+      host: "{{ .Release.Name }}.example.com"
+      # Paths for the host
+      paths:
+        - path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/'
+          pathType: Prefix
+  # TLS configuration
   tls:
-    enabled: false
-    #
-    # Specify a secret name 
-    #
-    secret:
+    - hosts:
+        - "{{ .Release.Name }}.example.com"
+      secretName: ""
 
 persistence:
   enabled: true
   #
-  # Use the existingClaim to specify 
+  # Use the existingClaim to specify
   # a specific volume to claim
   #
   existingClaim:
@@ -77,7 +127,6 @@ persistence:
   # from a storageprovider
   storageClass:
   requestSize: 20Gi
-
 #
 # (OPTIONAL) tolerations
 #
@@ -85,7 +134,7 @@ persistence:
 
 #
 # (OPTIONAL) nodeSelector
-# 
+#
 #nodeSelector:
 
 #
