@@ -143,5 +143,5 @@ persistence:
 #priorityClassName:
 
 serviceAccount:
-  enabled: false
-  existingServiceAccountName: ""
+  enabled: true
+  existingServiceAccountName: "xetusoss-service-account"
