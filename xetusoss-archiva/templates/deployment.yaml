@@ -24,13 +24,13 @@ spec:
       labels:
         app: {{ template "xetusoss-archiva.name" . }}
         release: {{ .Release.Name }}
-        {{- if .Values.podLabels }}
-        {{ toYaml .Values.podLabels | indent 8 }}
-        {{- end }}  
-      {{- if .Values.podAnnotations }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.podAnnotations }}
       annotations:
-      {{ toYaml .Values.podAnnotations | indent 8 }}
-      {{- end }}             
+        {{- toYaml . | nindent 8 }}
+      {{- end }}            
     spec:
       {{ if .Values.serviceAccount.enabled -}}
       serviceAccountName: {{ .Values.serviceAccount.existingServiceAccountName }}
