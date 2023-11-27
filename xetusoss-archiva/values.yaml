@@ -141,3 +141,7 @@ persistence:
 # (OPTIONAL) priorityClassName
 #
 #priorityClassName:
+
+serviceAccount:
+  enabled: false
+  existingServiceAccountName: ""
