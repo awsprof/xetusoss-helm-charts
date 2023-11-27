@@ -145,3 +145,7 @@ persistence:
 serviceAccount:
   enabled: true
   existingServiceAccountName: "xetusoss-service-account"
+
+podLabels: {}
+
+podAnnotations: {}
